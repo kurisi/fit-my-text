@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.0.0/jasmine.css">
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.0.0/jasmine.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.0.0/jasmine-html.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/3.0.0/boot.js"></script>
+
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js" integrity="sha256-T0Vest3yCU7pafRw9r+settMBX6JkKN06dqBnpQ8d30="
+  crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/ui-lightness/jquery-ui.css">
+<link href="https://fonts.googleapis.com/css?family=BioRhyme+Expanded:800|Cutive+Mono|Work+Sans" rel="stylesheet">
+
+<title>Fit my Text</title>
+
+<style>
+	body {
+		background-color: #ffffff;
+		text-align: center;
+	}
+	h1 {
+		font: 3.5em 'BioRhyme Expanded', serif;
+		color: #837C95;
+		font-weight: bold;
+	}
+	input {
+		height: 30px;
+		width: 100%;
+		font-family: 'Cutive Mono', monospace;
+		font-size: 20px;
+		background-color: #ffffff;
+		border: 0px;
+		border-bottom: 1px solid #999999;
+		margin: 30px auto;
+		box-shadow: none;
+		-webkit-box-shadow: none;
+	}
+	input:focus {
+		outline: none;
+	}
+	#output-container {
+		border: 1px solid #4a4a4a;
+		height: 50px;
+		width: 300px;
+		margin: 30px auto;
+		font-family: 'Work Sans', serif;
+		font-size: 45px;
+		white-space: nowrap;
+		overflow: hidden;
+	}
+	.wrapper {
+		width: 60%;
+		margin: 0 auto;
+	}
+	img {
+		margin: 0 auto;
+		width: 50%;
+	}
+</style>
+
+<script>
+	const maxFontSize = 45;
+	const minFontSize = 14;
+	var fontSize = maxFontSize;
+
+	$( document ).ready(function() {
+		if (localStorage.getItem("inputString")) {
+			$( "#input-text" ).val(localStorage.getItem("inputString"));
+		}
+	  
+	  fitText('output-container');
+
+    $( "#input-text" ).keyup(function() {
+	    var value = $( this ).val();
+	    $( "#output-text" ).text( value );
+
+	    fitText('output-container');
+
+	    saveInputString(this);
+	  }).keyup();
+
+	  $( function() {
+	    $( "#slider" ).slider({
+	      range: "max",
+	      min: 1,
+	      max: 100,
+	      value: 50,
+	      slide: function( event, ui ) {
+	        $( "#output-container" ).css("width", ui.value + '%');
+	        fitText('output-container');
+	      }
+	    });
+	  } );
+	});
+
+	function fitText(containingElement) {
+		const container = document.getElementById(containingElement);
+		const content = container.getElementsByTagName('span')[0];
+
+		console.log("Container: " + containingElement);
+
+		console.log("Container width: " + container.offsetWidth);
+		console.log("Content width: " + content.offsetWidth);
+
+		if (content.offsetWidth > container.offsetWidth) {
+			console.log("Hit the limit!");
+			fontSize -= 3;
+		}
+			
+		else if (content.offsetWidth < container.offsetWidth) {
+			console.log("Fits!");
+			fontSize += 3;
+		}
+
+		if (fontSize > maxFontSize) {
+			fontSize = maxFontSize;
+		}
+
+		if (fontSize < minFontSize) {
+			fontSize = minFontSize;
+		}
+
+		container.style.fontSize = fontSize + 'px';
+		return fontSize;
+	}
+
+	function saveInputString(e) {
+		localStorage.setItem("inputString", e.value);
+	}
+
+	function getSavedInputString (str){
+    if (localStorage.getItem(str) === null) {
+        return "";
+    }
+    return localStorage.getItem(str);
+  }
+
+  // UNIT TESTS (JASMINE)
+
+  describe('textFitterSuite', function() {
+
+  	beforeEach(function() {
+  		fontSize = maxFontSize;
+	    container = document.createElement("div");
+  		container.id = "newContainer";
+  		document.body.appendChild(container);
+			content = document.createElement("span");
+			content.style.display = "block";
+			container.appendChild(content);
+	  });
+
+  	it ('font size should be maximum size if output box is wider than its content', function() {
+			container.id = "newContainer";
+  		container.style.width = "350px";
+  		content.style.width = "300px";
+
+  		expect(fitText('newContainer')).toEqual(maxFontSize);
+  	});
+
+  	it ('font size should be less than maximum size if output box is narrower than its content', function() {
+			container.id = "newContainer2";
+			container.style.width = "300px";
+  		content.style.width = "350px";
+
+  		expect(fitText('newContainer2')).toBeLessThan(maxFontSize);
+  	});
+
+  });
+
+</script>
+
+</head>
+
+<body>
+
+<div class="wrapper">
+	<h1>Fit my Text</h1>
+
+	<img src="fluttershy.png">
+	<input type="text" id="input-text" placeholder="Type your text here">
+
+	<div id="slider"></div>
+ 
+	<div id="output-container">
+		<span id="output-text"></span>
+	</div>
+</div>
+
+</body>
+
+</html>
